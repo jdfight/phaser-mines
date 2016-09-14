@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Electron boilerplate</title>
+		<link rel="stylesheet" href="index.css">
+		<script src="./js/phaser.min.js"></script>
+	</head>
+	<body>
+		<!-- <div class="container">
+			<header>
+				<h1>Electron boilerplate</h1>
+			</header>
+			<section class="main"></section>
+			<footer></footer>
+		</div> -->
+		<script type="text/javascript">
+		require('babel-register');
+
+	//	var { Cell } = require('./Cell');
+	//	var c = new Cell(5,5,true);
+	//	console.log("Cell from html "+c._mine);
+//		var { Minefield } = require('./es6/Minefield')
+	//	const mines = new Minefield(20, 20, 40)
+	//	const cells = []
+
+		window.onload = function() {
+
+				//  Note that this html file is set to pull down Phaser 2.5.0 from the JS Delivr CDN.
+				//  Although it will work fine with this tutorial, it's almost certainly not the most current version.
+				//  Be sure to replace it with an updated version before you start experimenting with adding your own code.
+
+				var { StateGame } = require('./es6/StateGame')
+				var game = new Phaser.Game(800, 600, Phaser.AUTO);
+
+				//game.stage.scaleMode = Phaser.Stage.ScaleMode.EXACT_FIT;
+				game.state.add('StateGame', StateGame)
+				game.state.start('StateGame')
+
+
+		};
+
+		</script>
+
+	</body>
+</html>
