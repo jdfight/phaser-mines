@@ -16,7 +16,7 @@ export class StateGame extends Phaser.State
 
     this.game.load.spritesheet('mine-tiles', './assets/textures/mine-tiles.png', 20, 20)
     this.game.load.spritesheet('exploBig', './assets/textures/exploBig.png', 40, 40)
-
+    this.game.load.image('back', './assets/textures/back.png')
     this.game.stage.smoothed = false;
   }
 
@@ -46,6 +46,7 @@ export class StateGame extends Phaser.State
 
   create () {
     this.game.stage.backgroundColor = '#000000'
+    this.game.add.sprite(0,0,'back')
     var { CellView } = require('./CellView')
     // The player and its settings
 
