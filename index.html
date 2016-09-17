@@ -31,10 +31,11 @@
 				//  Be sure to replace it with an updated version before you start experimenting with adding your own code.
 
 				var { StateGame } = require('./es6/StateGame')
-				var game = new Phaser.Game(800, 600, Phaser.AUTO);
+				var { StateReset } = require('./es6/StateReset')
+				var game = new Phaser.Game(1024, 768, Phaser.AUTO);
 
-				//game.stage.scaleMode = Phaser.Stage.ScaleMode.EXACT_FIT;
 				game.state.add('StateGame', StateGame)
+				game.state.add('StateReset', StateReset)
 				game.state.start('StateGame')
 
 
