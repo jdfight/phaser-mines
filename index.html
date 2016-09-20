@@ -32,11 +32,11 @@
 
 				var { StateGame } = require('./es6/StateGame')
 				var { StateReset } = require('./es6/StateReset')
-				var game = new Phaser.Game(1024, 768, Phaser.AUTO);
+				var game = new Phaser.Game(1080, 1024, Phaser.AUTO);
 
 				game.state.add('StateGame', StateGame)
 				game.state.add('StateReset', StateReset)
-				game.state.start('StateGame')
+				game.state.start('StateGame', true, false, 10, 10, 10)
 
 
 		};

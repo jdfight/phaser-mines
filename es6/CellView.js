@@ -3,7 +3,7 @@ export class CellView extends Phaser.Sprite
 {
   constructor(game, x, y, cell, mines, callback)
   {
-    super();
+    super()
     Phaser.Sprite.call(this, game, x, y, 'mine-tiles', 1)
     game.add.existing(this)
     this.inputEnabled = true
@@ -13,7 +13,9 @@ export class CellView extends Phaser.Sprite
     this.minefield = mines
     this.state = game
     this.callback = callback
-    this.scale.set(2,2)
+    //this.scale.set(2,2)
+    this.width = 40
+    this.height = 40
     this.isFlagged = false
 
     if(cell._open)
@@ -25,12 +27,12 @@ export class CellView extends Phaser.Sprite
 
   open()
   {
-    if(this.minefield._isBlown || this.minefield.checkWin()) return;
+    if(this.minefield._isBlown || this.state.isWon) return;
 
     if(this.frame != 0 && this.cell._mine)
     {
       //var mine = this.game.add.sprite(this.x, this.y, 'mine-tiles', 4)
-    	var explo = this.state.add.sprite(this.x - 10, this.y - 10, 'exploBig', 0)
+    	var explo = this.state.add.sprite(this.x, this.y, 'exploBig', 0)
      	explo.animations.add('explode', [0,1,2,3,4,5,6,7,8,9,10,11,12,13], 24, false)
      	explo.animations.play('explode')
       this.frame = 2
@@ -56,10 +58,12 @@ export class CellView extends Phaser.Sprite
   {
       if(this.state.game.input.activePointer.rightButton.isDown)
       {
-        if(!this.isFlagged)
+        if(!this.isFlagged && !this.cell._open)
         {
-          this.flag = this.game.add.sprite(this.x + 2, this.y + 4, 'mine-tiles', 3)
-          this.flag.scale.set(1.5,1.5)
+          this.flag = this.game.add.sprite(this.x, this.y, 'flag')
+          //this.flag.scale.set(1.5,1.5)
+          this.flag.width = this.width
+          this.flag.height = this.height
           this.isFlagged = true
           this.state.incFlag(1)
         }

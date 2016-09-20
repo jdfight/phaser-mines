@@ -5,18 +5,27 @@ export class StateGame extends Phaser.State
     super()
 
   }
+  init(w, h, m)
+  {
+    this.gridw = w
+    this.gridh = h
+    this.total_mines = m
+    this.isWon = false
+  }
 
   preload ()
   {
     var { Minefield } = require('./Minefield')
-    this.mines = new Minefield(16, 16, 40)
-    this.total_mines = 40;
+
+    this.mines = new Minefield(this.gridw, this.gridh, this.total_mines)  // 16 16 40 = intermediate/hard
     this.cells = []
     this.flagged = 0
 
-    this.game.load.spritesheet('mine-tiles', './assets/textures/mine-tiles.png', 20, 20)
+    this.game.load.spritesheet('mine-tiles', './assets/textures/mine-tiles2.png', 64, 64)
     this.game.load.spritesheet('exploBig', './assets/textures/exploBig.png', 40, 40)
-    this.game.load.image('back', './assets/textures/back.png')
+    this.game.load.image('back', './assets/textures/bg-space1.jpg')
+    this.game.load.image('star2', './assets/textures/star2.png')
+    this.game.load.image('flag', './assets/textures/flag.png')
     this.game.stage.smoothed = false;
   }
 
@@ -40,13 +49,16 @@ export class StateGame extends Phaser.State
     if(state.mines.checkWin() == true)
     {
       console.log("You Won")
-      state.setMessage('You Won!')
+      state.setMessage('You\nWon!')
+      state.isWon = true
     }
   }
 
   create () {
-    this.game.stage.backgroundColor = '#000000'
+    //var { Starfield } = require('./Starfield')
+    this.game.stage.backgroundColor = '#00030c'
     this.game.add.sprite(0,0,'back')
+    //this.stars = new Starfield(this.game, 0,0);
     var { CellView } = require('./CellView')
     // The player and its settings
 
@@ -68,15 +80,27 @@ export class StateGame extends Phaser.State
       }
     }
 
-    this.textstyle = { font: "32px Arial", fill: "#00ff44", align: "center" }
-    this.msgtext = this.game.add.text(800, 6, "10", this.textstyle)
-    this.btnReset = this.game.add.button(800, 300, 'mine-tiles', this.onResetClick, this, 8, 6, 7)
+    this.textstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
+    this.msgtext = this.game.add.text(980, 6, "10", this.textstyle)
+
+    this.ngstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
+    this.newgametext = this.game.add.text(980, 220, "New\nGame:", this.textstyle)
+
+    this.btnEasy = this.game.add.button(980, 300, 'mine-tiles', this.onEasyClick, this, 6, 4, 5)
+    this.btnMed = this.game.add.button(980, 340, 'mine-tiles', this.onMedClick, this, 6, 4, 5)
+    this.btnHard = this.game.add.button(980, 380, 'mine-tiles', this.onHardClick, this, 6, 4, 5)
 
     this.textresetstyle = { font: "24px Arial", fill: "#000000", align: "center" }
-    this.resettext = this.game.add.text(810, 302, "Reset", this.textresetstyle)
+    this.easytext = this.game.add.text(990, 302, "Easy", this.textresetstyle)
+    this.medtext = this.game.add.text(990, 342, "Med", this.textresetstyle)
+    this.hardtext = this.game.add.text(990, 382, "Hard", this.textresetstyle)
 
-    this.btnReset.width = 80
-    this.btnReset.height = 32
+    this.btnEasy.width = 80
+    this.btnEasy.height = 32
+    this.btnMed.width = 80
+    this.btnMed.height = 32
+    this.btnHard.width = 80
+    this.btnHard.height = 32
   }
 
   setMessage(msg) {
@@ -89,9 +113,33 @@ export class StateGame extends Phaser.State
     this.setMessage(`${this.total_mines - this.flagged}`)
   }
 
-  onResetClick()
+  onEasyClick()
+  {
+    this.Reset(0)
+  }
+  onMedClick()
+  {
+    this.Reset(1)
+  }
+  onHardClick()
+  {
+    this.Reset(2)
+  }
+  Reset(diff)
   {
     console.log("On Reset")
-    this.game.state.start('StateReset')
+    switch (diff)
+    {
+      case 1:
+        this.game.state.start('StateReset', true, false, 16,16,40)
+        break
+      case 2:
+        this.game.state.start('StateReset', true, false, 24,24,100)
+        break
+      default:
+        this.game.state.start('StateReset', true, false, 10,10,10)
+        break
+    }
   }
+
 }
