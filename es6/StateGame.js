@@ -81,7 +81,7 @@ export class StateGame extends Phaser.State
     }
 
     this.textstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
-    this.msgtext = this.game.add.text(980, 6, "10", this.textstyle)
+    this.msgtext = this.game.add.text(980, 6, `${this.total_mines}`, this.textstyle)
 
     this.ngstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
     this.newgametext = this.game.add.text(980, 220, "New\nGame:", this.textstyle)
