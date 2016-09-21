@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>Electron boilerplate</title>
+		<title>Asteroid Miner</title>
 		<link rel="stylesheet" href="index.css">
 		<script src="./js/phaser.min.js"></script>
 	</head>
@@ -17,12 +17,6 @@
 		<script type="text/javascript">
 		require('babel-register');
 
-	//	var { Cell } = require('./Cell');
-	//	var c = new Cell(5,5,true);
-	//	console.log("Cell from html "+c._mine);
-//		var { Minefield } = require('./es6/Minefield')
-	//	const mines = new Minefield(20, 20, 40)
-	//	const cells = []
 
 		window.onload = function() {
 
@@ -32,13 +26,11 @@
 
 				var { StateGame } = require('./es6/StateGame')
 				var { StateReset } = require('./es6/StateReset')
-				var game = new Phaser.Game(1080, 1024, Phaser.AUTO);
+				var game = new Phaser.Game(600, 520, Phaser.AUTO);
 
 				game.state.add('StateGame', StateGame)
 				game.state.add('StateReset', StateReset)
 				game.state.start('StateGame', true, false, 10, 10, 10)
-
-
 		};
 
 		</script>

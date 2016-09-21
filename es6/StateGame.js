@@ -7,10 +7,19 @@ export class StateGame extends Phaser.State
   }
   init(w, h, m)
   {
+    const electron = require('electron')
+    const {ipcRenderer} = require('electron')
+    const app = electron.app;
     this.gridw = w
     this.gridh = h
     this.total_mines = m
     this.isWon = false
+    this.game.scale.setGameSize(w * 40 + 200, h * 40 + 80)
+
+    this.game.world.setBounds(-100, -100, this.game.width + 100, this.game.height + 100);
+    this.game.physics.startSystem(Phaser.Physics.P2JS);
+    //this.game.physics.startSystem(Phaser.Physics.P2JS);
+    ipcRenderer.send('resize-window', this.game.width, this.game.height)
   }
 
   preload ()
@@ -49,16 +58,21 @@ export class StateGame extends Phaser.State
     if(state.mines.checkWin() == true)
     {
       console.log("You Won")
-      state.setMessage('You\nWon!')
+      state.setMessage('You Won!')
       state.isWon = true
     }
   }
 
   create () {
-    //var { Starfield } = require('./Starfield')
+    var { Starfield } = require('./Starfield')
     this.game.stage.backgroundColor = '#00030c'
-    this.game.add.sprite(0,0,'back')
-    //this.stars = new Starfield(this.game, 0,0);
+    var bg = this.game.add.sprite(-100, -100, 'back')
+    if(this.game.width > 1080) {
+      bg.width = this.game.width + 200
+      bg.height = this.game.height + 200
+    }
+    bg.fixedToCamera = true
+    this.stars = new Starfield(this.game, 0,0);
     var { CellView } = require('./CellView')
     // The player and its settings
 
@@ -69,31 +83,31 @@ export class StateGame extends Phaser.State
         var cell = this.mines._cells[y][x]
         if(cell._num == 0 || cell._mine)
         {
-          var cv = new CellView(this, x * 40 + 10, y * 40 + 10, cell, this.mines, this.clearUpdates)
+          var cv = new CellView(this, x * 40 + 40, y * 40 + 40, cell, this.mines, this.clearUpdates)
           this.cells.push(cv)
         }
         else
         {
-          var cv = new CellView(this, x * 40 + 10, y * 40 + 10, cell, this.mines, this.clearUpdates)
+          var cv = new CellView(this, x * 40 + 40, y * 40 + 40, cell, this.mines, this.clearUpdates)
           this.cells.push(cv)
         }
       }
     }
 
     this.textstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
-    this.msgtext = this.game.add.text(980, 6, `${this.total_mines}`, this.textstyle)
+    this.msgtext = this.game.add.text(80, 6, `${this.total_mines}`, this.textstyle)
 
     this.ngstyle = { font: "24px Arial", fill: "#ffffff", align: "center" }
-    this.newgametext = this.game.add.text(980, 220, "New\nGame:", this.textstyle)
+    this.newgametext = this.game.add.text(this.game.width - 120, 220, "New\nGame:", this.textstyle)
 
-    this.btnEasy = this.game.add.button(980, 300, 'mine-tiles', this.onEasyClick, this, 6, 4, 5)
-    this.btnMed = this.game.add.button(980, 340, 'mine-tiles', this.onMedClick, this, 6, 4, 5)
-    this.btnHard = this.game.add.button(980, 380, 'mine-tiles', this.onHardClick, this, 6, 4, 5)
+    this.btnEasy = this.game.add.button(this.game.width - 120, 300, 'mine-tiles', this.onEasyClick, this, 6, 4, 5)
+    this.btnMed = this.game.add.button(this.game.width - 120, 340, 'mine-tiles', this.onMedClick, this, 6, 4, 5)
+    this.btnHard = this.game.add.button(this.game.width - 120, 380, 'mine-tiles', this.onHardClick, this, 6, 4, 5)
 
     this.textresetstyle = { font: "24px Arial", fill: "#000000", align: "center" }
-    this.easytext = this.game.add.text(990, 302, "Easy", this.textresetstyle)
-    this.medtext = this.game.add.text(990, 342, "Med", this.textresetstyle)
-    this.hardtext = this.game.add.text(990, 382, "Hard", this.textresetstyle)
+    this.easytext = this.game.add.text(this.game.width - 110, 302, "Easy", this.textresetstyle)
+    this.medtext = this.game.add.text(this.game.width - 110, 342, "Med", this.textresetstyle)
+    this.hardtext = this.game.add.text(this.game.width - 110, 382, "Hard", this.textresetstyle)
 
     this.btnEasy.width = 80
     this.btnEasy.height = 32
@@ -125,6 +139,13 @@ export class StateGame extends Phaser.State
   {
     this.Reset(2)
   }
+
+  shake()
+  {
+    this.game.camera.shake(0.025);
+    this.game.camera.flash(0xff9200, 100)
+  }
+
   Reset(diff)
   {
     console.log("On Reset")

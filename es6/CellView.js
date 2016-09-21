@@ -37,6 +37,7 @@ export class CellView extends Phaser.Sprite
      	explo.animations.play('explode')
       this.frame = 2
       this.state.setMessage("Boom!")
+      this.state.shake()
     }
     else
     {

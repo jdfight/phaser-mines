@@ -3,6 +3,7 @@
 require('babel-register');
 
 const electron = require('electron');
+const {ipcMain} = require('electron');
 const app = electron.app;
 
 // adds debug features like hotkeys for triggering dev tools and reload
@@ -19,12 +20,14 @@ function onClosed() {
 
 function createMainWindow() {
 	const win = new electron.BrowserWindow({
-		width: 1080,
-		height: 768
+		width: 600,
+		height: 520
 	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
+	win.isResizable = true
 	win.on('closed', onClosed);
+	win.setMenu(null);
 	return win;
 }
 
@@ -43,3 +46,8 @@ app.on('activate', () => {
 app.on('ready', () => {
 	mainWindow = createMainWindow();
 });
+
+ipcMain.on('resize-window', (event, w, h) => {
+	h = h > 720 ? 720 : h
+	mainWindow.setSize(w, h)
+})
