@@ -32,6 +32,7 @@ export class StateGame extends Phaser.State
 
     this.game.load.spritesheet('mine-tiles', './assets/textures/mine-tiles2.png', 64, 64)
     this.game.load.spritesheet('exploBig', './assets/textures/exploBig.png', 40, 40)
+    this.game.load.spritesheet('smoke', './assets/textures/smoke.png', 20, 20)
     this.game.load.image('back', './assets/textures/bg-space1.jpg')
     this.game.load.image('star2', './assets/textures/star2.png')
     this.game.load.image('flag', './assets/textures/flag.png')
@@ -91,6 +92,7 @@ export class StateGame extends Phaser.State
           var cv = new CellView(this, x * 40 + 40, y * 40 + 40, cell, this.mines, this.clearUpdates)
           this.cells.push(cv)
         }
+        
       }
     }
 

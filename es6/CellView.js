@@ -17,11 +17,12 @@ export class CellView extends Phaser.Sprite
     this.width = 40
     this.height = 40
     this.isFlagged = false
-
+    this.isActive = false
     if(cell._open)
     {
       this.open()
     }
+    this.isActive = true
     return this
   }
 
@@ -41,6 +42,14 @@ export class CellView extends Phaser.Sprite
     }
     else
     {
+      if(this.isActive && this.frame != 0)
+      {
+        var smoke = this.state.add.sprite(this.x, this.y, 'smoke', 0)
+        smoke.width = 40
+        smoke.height = 40
+        smoke.animations.add('puff', [0,1,2,3,4,5,6,7,8], Math.round(Math.random() * (30-12+1)+12), false)
+        smoke.animations.play('puff')
+      }
       this.frame = 0
       if(this.cell._num > 0)
       {
@@ -77,6 +86,7 @@ export class CellView extends Phaser.Sprite
       }
       else if (!this.isFlagged)
       {
+        this.clicks += 1
         this.open()
         this.minefield.openCell(this.cell._x, this.cell._y)
 
