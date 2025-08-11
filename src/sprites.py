@@ -1,4 +1,5 @@
 import pygame
+import random
 
 CELL_SIZE = 40  # The original game resizes sprites to 40x40
 
@@ -29,6 +30,37 @@ def load_flag_image():
     flag_img = pygame.image.load("assets/textures/flag.png").convert_alpha()
     return pygame.transform.scale(flag_img, (CELL_SIZE, CELL_SIZE))
 
+def load_animation_sheet(path, frame_size, scale_size):
+    """Loads a spritesheet for animation."""
+    sheet = pygame.image.load(path).convert_alpha()
+    frames = []
+    for i in range(sheet.get_width() // frame_size[0]):
+        frame = sheet.subsurface(pygame.Rect(i * frame_size[0], 0, frame_size[0], frame_size[1]))
+        frames.append(pygame.transform.scale(frame, scale_size))
+    return frames
+
+class AnimatedSprite(pygame.sprite.Sprite):
+    """A sprite that plays an animation and then disappears."""
+    def __init__(self, x, y, frames, frame_rate):
+        super().__init__()
+        self.frames = frames
+        self.frame_rate = frame_rate
+        self.last_update = pygame.time.get_ticks()
+        self.frame = 0
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def update(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 1000 / self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(self.frames):
+                self.kill() # Animation finished
+            else:
+                self.image = self.frames[self.frame]
+
+
 class CellSprite(pygame.sprite.Sprite):
     """
     Visual representation of a single cell in the minefield.
@@ -55,8 +87,9 @@ class CellSprite(pygame.sprite.Sprite):
     def _update_image(self):
         """Internal helper to set the correct image and text."""
         if self.cell_data.is_open:
+            # When a mine is opened, it will be handled by an explosion animation
             if self.cell_data.is_mine:
-                self.image = self.images["mine"]
+                self.image = self.images["empty"] # Show empty tile underneath
             else:
                 self.image = self.images["empty"]
                 if self.cell_data.adjacent_mines > 0:

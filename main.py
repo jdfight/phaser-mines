@@ -1,8 +1,9 @@
 import pygame
 import sys
+import random
 
 from src.minefield import Minefield
-from src.sprites import CellSprite, load_sprite_sheet, load_flag_image, CELL_SIZE
+from src.sprites import CellSprite, load_sprite_sheet, load_flag_image, CELL_SIZE, AnimatedSprite, load_animation_sheet
 from src.starfield import Starfield
 
 # --- Constants ---
@@ -49,6 +50,8 @@ class Game:
         try:
             self.cell_images = load_sprite_sheet()
             self.flag_image = load_flag_image()
+            self.explosion_frames = load_animation_sheet("assets/textures/exploBig.png", (40, 40), (CELL_SIZE, CELL_SIZE))
+            self.smoke_frames = load_animation_sheet("assets/textures/smoke.png", (20, 20), (CELL_SIZE, CELL_SIZE))
         except pygame.error as e:
             print(f"Error loading assets: {e}")
             pygame.quit()
@@ -75,6 +78,10 @@ class Game:
 
         self.minefield = Minefield(grid_w, grid_h, num_mines)
         self.all_sprites = pygame.sprite.Group()
+        self.animation_sprites = pygame.sprite.Group()
+
+        # Create a map of cell data to cell sprite for easy lookup
+        self.cell_sprite_map = {}
 
         for y in range(self.minefield.height):
             for x in range(self.minefield.width):
@@ -88,6 +95,7 @@ class Game:
                     self.font
                 )
                 self.all_sprites.add(sprite)
+                self.cell_sprite_map[(x, y)] = sprite
 
     def trigger_game_over_effects(self):
         """Activates the screen shake and flash effects."""
@@ -122,12 +130,23 @@ class Game:
                                 if sprite.rect.collidepoint(event.pos):
                                     # Check game_over state BEFORE opening the cell
                                     was_game_over = self.minefield.game_over
-
+                                    
+                                    x, y = sprite.cell_data.x, sprite.cell_data.y
                                     action = sprite.handle_click(event.button)
+
                                     if action == "open":
-                                        self.minefield.open_cell(sprite.cell_data.x, sprite.cell_data.y)
+                                        opened_cells = self.minefield.open_cell(x, y)
+                                        for cell_data in opened_cells:
+                                            cell_sprite = self.cell_sprite_map[(cell_data.x, cell_data.y)]
+                                            if cell_data.is_mine:
+                                                explosion = AnimatedSprite(cell_sprite.rect.x, cell_sprite.rect.y, self.explosion_frames, 24)
+                                                self.animation_sprites.add(explosion)
+                                            else:
+                                                smoke = AnimatedSprite(cell_sprite.rect.x, cell_sprite.rect.y, self.smoke_frames, random.randint(12, 30))
+                                                self.animation_sprites.add(smoke)
+
                                     elif action == "flag":
-                                        self.minefield.toggle_flag(sprite.cell_data.x, sprite.cell_data.y)
+                                        self.minefield.toggle_flag(x, y)
 
                                     # If the game just ended because of a mine hit
                                     if not was_game_over and self.minefield.game_over and not self.minefield.game_won:
@@ -138,6 +157,7 @@ class Game:
 
             # --- Update ---
             self.starfield.update()
+            self.animation_sprites.update()
 
             # --- Drawing ---
             render_offset = [0, 0]
@@ -152,6 +172,7 @@ class Game:
             temp_surface.fill(BLACK_BG)
             self.starfield.draw(temp_surface)
             self.all_sprites.draw(temp_surface)
+            self.animation_sprites.draw(temp_surface)
             self._draw_ui(mouse_pos, temp_surface)
 
             # Draw flash effect
