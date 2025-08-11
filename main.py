@@ -28,6 +28,12 @@ class Game:
         pygame.init()
         self.font = pygame.font.Font(None, 36)
         self.difficulty_name = difficulty_name
+
+        # Effect states
+        self.shake_timer = 0
+        self.flash_alpha = 0
+        self.flash_color = (255, 146, 0) # Orange from original game (0xff9200)
+
         self.setup_screen_and_assets()
         self.reset_game()
 
@@ -83,6 +89,11 @@ class Game:
                 )
                 self.all_sprites.add(sprite)
 
+    def trigger_game_over_effects(self):
+        """Activates the screen shake and flash effects."""
+        self.shake_timer = 20  # Shake for 20 frames
+        self.flash_alpha = 200 # Start flash at this alpha
+
     def run(self):
         """Main game loop."""
         running = True
@@ -109,11 +120,18 @@ class Game:
                         if not self.minefield.game_over:
                             for sprite in self.all_sprites:
                                 if sprite.rect.collidepoint(event.pos):
+                                    # Check game_over state BEFORE opening the cell
+                                    was_game_over = self.minefield.game_over
+
                                     action = sprite.handle_click(event.button)
                                     if action == "open":
                                         self.minefield.open_cell(sprite.cell_data.x, sprite.cell_data.y)
                                     elif action == "flag":
                                         self.minefield.toggle_flag(sprite.cell_data.x, sprite.cell_data.y)
+
+                                    # If the game just ended because of a mine hit
+                                    if not was_game_over and self.minefield.game_over and not self.minefield.game_won:
+                                        self.trigger_game_over_effects()
 
                                     self.all_sprites.update()
                                     break
@@ -122,10 +140,29 @@ class Game:
             self.starfield.update()
 
             # --- Drawing ---
-            self.screen.fill(BLACK_BG)
-            self.starfield.draw(self.screen)
-            self.all_sprites.draw(self.screen)
-            self._draw_ui(mouse_pos)
+            render_offset = [0, 0]
+            if self.shake_timer > 0:
+                self.shake_timer -= 1
+                render_offset[0] = random.randint(-4, 4)
+                render_offset[1] = random.randint(-4, 4)
+
+            # Draw all game elements to a temporary surface if shaking
+            # This prevents shaking individual elements differently
+            temp_surface = self.screen.copy()
+            temp_surface.fill(BLACK_BG)
+            self.starfield.draw(temp_surface)
+            self.all_sprites.draw(temp_surface)
+            self._draw_ui(mouse_pos, temp_surface)
+
+            # Draw flash effect
+            if self.flash_alpha > 0:
+                flash_surface = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+                flash_surface.fill((*self.flash_color, self.flash_alpha))
+                temp_surface.blit(flash_surface, (0, 0))
+                self.flash_alpha -= 15 # Fade out faster
+
+            # Draw the potentially shaken surface to the main screen
+            self.screen.blit(temp_surface, render_offset)
 
             pygame.display.flip()
             clock.tick(60)
@@ -133,27 +170,27 @@ class Game:
         pygame.quit()
         sys.exit()
 
-    def _draw_ui(self, mouse_pos):
-        """Draws all UI elements."""
+    def _draw_ui(self, mouse_pos, surface):
+        """Draws all UI elements onto the given surface."""
         # Mine Counter
         counter_text = f"Mines: {self.minefield.mines_remaining}"
         counter_surf = self.font.render(counter_text, True, WHITE)
-        self.screen.blit(counter_surf, (GRID_X_OFFSET, 10))
+        surface.blit(counter_surf, (GRID_X_OFFSET, 10))
 
         # Game Over/Win Message
         if self.minefield.game_over:
             msg = "You Won!" if self.minefield.game_won else "Boom! Game Over"
             msg_surf = self.font.render(msg, True, WHITE)
             msg_rect = msg_surf.get_rect(center=(self.screen_width / 2, 15))
-            self.screen.blit(msg_surf, msg_rect)
+            surface.blit(msg_surf, msg_rect)
 
         # Difficulty Buttons
         for name, rect in self.buttons.items():
             color = BUTTON_HOVER_COLOR if rect.collidepoint(mouse_pos) else BUTTON_COLOR
-            pygame.draw.rect(self.screen, color, rect, border_radius=5)
+            pygame.draw.rect(surface, color, rect, border_radius=5)
             btn_text = self.font.render(name.capitalize(), True, WHITE)
             text_rect = btn_text.get_rect(center=rect.center)
-            self.screen.blit(btn_text, text_rect)
+            surface.blit(btn_text, text_rect)
 
 if __name__ == '__main__':
     game = Game(DEFAULT_DIFFICULTY)
