@@ -2,3 +2,4 @@ node_modules
 .tern-project
 .editorconfig
 /dist
+__pycache__
